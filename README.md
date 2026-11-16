@@ -7,6 +7,9 @@
 
 ## Overview
 
+### 0. About the project
+This project was part of an IOT class during my bachelors degree. Even though i was unexperienced at the time, the project features some technologies i still work with today (lora, mqtt, homeassistant, 3d-printing). It would be interesting to revive the idea with better materials and actually use it.
+
 ### 1. Hardware
    #### 1.1 Box
    The frame of the parcel box is built from MiniTec aluminium profiles that hold 4 mm chipboard panels. The lid is connected to the body of the box with 2 hinges.
