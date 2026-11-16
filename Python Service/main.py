@@ -31,38 +31,36 @@ URL = os.getenv("HA_URL", "http://192.168.0.164:8123/api")
 TOKEN = require_env("HA_TOKEN")
 
 
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
+def on_connect(client, userdata, flags, reason_code, properties):
+    if reason_code.is_failure:
+        print(f"Connection failed: {reason_code}")
+    else:
         print("Connected to MQTT broker")
         client.subscribe(topic)
-    else:
-        print(f"Connection failed with code {rc}")
 
 
 def on_message(client, userdata, msg):
-    print(f"{msg.payload.decode()}")
     payload = msg.payload.decode('utf-8')  # Decode payload bytes to string
     try:
-        data = json.loads(payload)
+        uplink_message = json.loads(payload)["uplink_message"]
+    except (json.JSONDecodeError, KeyError) as e:
+        # Ignore anything that is not an uplink instead of crashing the MQTT loop.
+        print("Ignoring message that is not a valid uplink:", e)
+        return
 
-        uplink_message = data["uplink_message"]
-        print(json.dumps(uplink_message, indent=4))
-    except json.JSONDecodeError as e:
-        print("Error decoding JSON:", e)
-
-    print(uplink_message)
+    print(json.dumps(uplink_message, indent=4))
 
     home_assistant_client = Client(URL, TOKEN)
     home_assistant_client.trigger_service('notify', 'notify', message='Es ist ein Paket in der Paketbox angekommen!', title='Alarm')
 
 
-mqtt = mqtt.Client()
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)  # paho-mqtt >= 2.0
 
-mqtt.on_connect = on_connect
-mqtt.on_message = on_message
+client.on_connect = on_connect
+client.on_message = on_message
 
-mqtt.username_pw_set(username=username, password=passkey)
+client.username_pw_set(username=username, password=passkey)
 
-mqtt.connect(broker_address, broker_port, keepalive=60)
+client.connect(broker_address, broker_port, keepalive=60)
 
-mqtt.loop_forever()
+client.loop_forever()
