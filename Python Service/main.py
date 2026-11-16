@@ -1,18 +1,34 @@
+import os
+
 from homeassistant_api import Client
 import paho.mqtt.client as mqtt
 import json
 
+try:
+    # Load .env next to this file if python-dotenv is installed; otherwise use the real environment.
+    from dotenv import load_dotenv
+
+    load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+except ImportError:
+    pass
+
+
+def require_env(name):
+    value = os.getenv(name)
+    if not value:
+        raise SystemExit(f"Environment variable {name} is not set (see .env.example)")
+    return value
+
+
 broker_address = "eu1.cloud.thethings.network"
 broker_port = 1883
 username = "paketbox-iot@ttn"
-passkey = "***REMOVED***"
+passkey = require_env("TTN_API_KEY")
 topic = "v3/paketbox-iot@ttn/devices/eui-70b3d57ed0064c21/up"
 
 
-URL = 'http://192.168.0.164:8123/api'
-TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' \
-        '.***REMOVED***' \
-        '.***REMOVED***'
+URL = os.getenv("HA_URL", "http://192.168.0.164:8123/api")
+TOKEN = require_env("HA_TOKEN")
 
 
 def on_connect(client, userdata, flags, rc):

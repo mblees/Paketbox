@@ -40,6 +40,8 @@
    #### 2.2 Python Service
    Der Service nutzt die HomeAssistantAPI, um Push-Benachrichtigungen an Handys zu schicken und die `paho-mqtt`-Bibliothek, um die von TTN empfangenen LoRa-Daten auszuwerten und daraufhin einen `notify`-Service in HomeAssistant auszulösen.
    
+   Die Zugangsdaten (TTN-API-Key, HomeAssistant-Token) stehen nicht im Repo: `Python Service/.env.example` nach `Python Service/.env` kopieren und ausfüllen oder die Variablen `TTN_API_KEY`, `HA_URL` und `HA_TOKEN` in der Umgebung setzen. Die LoRaWAN-Keys der Firmware gehören nach `PlatformIO Project/keyfiles/lorawan-keys.h` (Vorlage: `lorawan-keys_example.h`).
+
    <img src="https://github.com/mblees/IOT_Paketbox/assets/104490472/f75a16c0-de0b-48ad-9c84-602454432d41" alt="notify" width="800" height="800">
 
    #### 2.3 HomeAssistant
