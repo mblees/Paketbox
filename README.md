@@ -1,69 +1,79 @@
-# IoT-Projekt – Paketbox Dokumentation
-![WhatsApp Bild 2024-02-06 um 20 36 11_9b5375aa](https://github.com/mblees/IOT_Paketbox/assets/104490472/336fe2ea-0bf8-496e-8120-b985baa9306d)
+# IoT Project – Parcel Box Documentation
 
-## Übersicht:
+[![Build](https://github.com/mblees/Paketbox/actions/workflows/build.yml/badge.svg)](https://github.com/mblees/Paketbox/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+![The finished parcel box](https://github.com/mblees/IOT_Paketbox/assets/104490472/336fe2ea-0bf8-496e-8120-b985baa9306d)
+
+## Overview
 
 ### 1. Hardware
    #### 1.1 Box
-   Das Gerüst der Paketbox besteht aus MiniTec-Aluprofilen, die zum Halten von 4 mm dicken Spanholzplatten genutzt werden. Der Deckel wird durch 2 Scharniere mit dem Körper der Box verbunden.
+   The frame of the parcel box is built from MiniTec aluminium profiles that hold 4 mm chipboard panels. The lid is connected to the body of the box with 2 hinges.
 
-   #### 1.2 Sensoren/andere Hardware
-   - Ultraschallsensor: HC-SR04
-       - Da der Sensor auf 5V läuft und die GPIO-Pins des ESP32 nur 3,3V vertragen, muss ein Spannungsteiler bestehend aus 2 10k Ohm Widerständen verwendet werden. Das senkt die Spannung allerdings nicht genau auf 3,3V, deshalb muss in der Software damit gerechnet werden.
-   - Reed-Modul: KY-021
-       - Wird mit 3,3V versorgt, daher muss hier nichts Besonderes beachtet werden.
-   - Schrittmotor: 28BYJ-48
-       - Wird mit 5V über den dazugehörigen Motortreiber versorgt.
-   - Matrixtastatur: [Link zur Tastatur](https://www.az-delivery.de/products/4x4-matrix-keypad)
-       - Aufgrund mangelnder Pins verwende ich die 4x4 Matrix nur als 2x2 Matrix mit den Tasten 1, 2, 4, 5.
-   - Stromversorgung durch eine Powerbank mit 5V Ausgang.
+   #### 1.2 Sensors / other hardware
+   - Ultrasonic sensor: HC-SR04
+       - The sensor runs on 5 V, but the ESP32's GPIO pins only tolerate 3.3 V, so a voltage divider made of two 10 kΩ resistors is required. It does not bring the voltage down to exactly 3.3 V, so the software has to account for that.
+   - Reed module: KY-021
+       - Powered with 3.3 V, so nothing special has to be considered here.
+   - Stepper motor: 28BYJ-48
+       - Powered with 5 V through its matching motor driver.
+   - Matrix keypad: [link to the keypad](https://www.az-delivery.de/products/4x4-matrix-keypad)
+       - Due to a lack of pins, I only use the 4x4 matrix as a 2x2 matrix with the keys 1, 2, 4 and 5.
+   - Power is supplied by a power bank with a 5 V output.
 
-   #### 1.3 Mikroprozessor
-   Beim Mikroprozessor handelt es sich um den WiFi-LoRa-32-V2 der Firma Heltec Automation mit eingebautem LoRa-Modul, Display und integrierter LED. Um Energie zu sparen, werden sowohl das Display als auch die integrierte LED nicht verwendet.
+   #### 1.3 Microcontroller
+   The microcontroller is the WiFi LoRa 32 V2 by Heltec Automation with a built-in LoRa module, display and integrated LED. To save energy, neither the display nor the integrated LED is used.
 
-   #### 1.4 Verschlussmechanismus
-   Der Verschlussmechanismus besteht aus einem Stepper Motor mit einem Zahnrad, welches einen Kolben durch 2 Ösen schiebt. Die Ösen sind jeweils am Deckel oder am Körper der Box befestigt und verhindern, wenn der Kolben ausgefahren ist, dass sich der Deckel öffnen lässt.
-   
-  ![WhatsApp Bild 2024-02-06 um 20 21 44_378a7dea](https://github.com/mblees/IOT_Paketbox/assets/104490472/fe967090-578b-4d9d-857b-74d28b1b5561)
+   #### 1.4 Locking mechanism
+   The locking mechanism consists of a stepper motor with a gear that pushes a bolt through 2 eyelets. One eyelet is attached to the lid and one to the body of the box; when the bolt is extended, they prevent the lid from being opened.
 
-   Anmerkung: Hier handelt es sich Budgetbedingt um 3D-gedruckte Teile welche in eienr realen Anwendung nicht sicher genug wären um ein Paket mit Wert zu sichern.
+  ![Locking mechanism: stepper motor with gear and bolt](https://github.com/mblees/IOT_Paketbox/assets/104490472/fe967090-578b-4d9d-857b-74d28b1b5561)
+
+   Note: Because of the budget, these are 3D-printed parts, which would not be secure enough in a real application to protect a valuable parcel.
 
 ### 2. Software
-   #### 2.1 C++-Part / Mikroprozessorprogrammierung
-   Die Programmierung des Controllers beruht auf dem Framework/Example LMIC-node von lnlp ([GitHub-Link](https://github.com/lnlp/LMIC-node)). Ich habe eine logische Steuerung in der `main()`-Funktion hinzugefügt sowie Bibliotheken für alle Peripheriekomponenten:
-   - `Matrix.h`/`Matrix.cpp`: Beinhaltet das Auslesen der Matrix-Tastatur unter Verwendung der Bibliothek: `chris--a/Keypad@^3.1.1`.
-   - `Reed_sensor.h`/`Reed_sensor.cpp`: Beinhaltet das Auslesen des Reed-Sensors, das über ein DigitalReed geschieht.
-   - `Rfid.h`/`Rfid.cpp`: Beinhaltet Funktionen, um einen RFID-Sensor zu verwenden. Diese Funktion wurde letztendlich nicht genutzt, da der Mikrocontroller nicht genug Pins übrig hat.
-   - `Stepper.h`/`Stepper.cpp`: Beinhaltet die Ansteuerung des Schrittmotor-Treibers unter Verwendung der Bibliothek: `waspinator/AccelStepper@^1.64`.
-   - `Supersonic_sensor.h`/`Supersonic_sensor.cpp`: Beinhaltet das Auswerten des Ultraschallsensors und eine Funktion, die einen Mittelwert bildet, da der Sensor ab und zu falsche Werte liefern kann.
+   #### 2.1 C++ part / microcontroller programming
+   The controller firmware is based on the framework/example LMIC-node by lnlp ([GitHub link](https://github.com/lnlp/LMIC-node)). I added the control logic in the `main()` function as well as libraries for all peripheral components:
+   - `matrix.h`/`matrix.cpp`: reads the matrix keypad using the library `chris--a/Keypad@^3.1.1`.
+   - `reed_sensor.h`/`reed_sensor.cpp`: reads the reed sensor via `digitalRead()`.
+   - `rfid.h`/`rfid.cpp`: contains functions for using an RFID sensor. This feature was not used in the end because the microcontroller does not have enough pins left.
+   - `stepper.h`/`stepper.cpp`: drives the stepper motor driver using the library `waspinator/AccelStepper@^1.64`.
+   - `supersonic_sensor.h`/`supersonic_sensor.cpp`: evaluates the ultrasonic sensor and includes a function that averages several readings, since the sensor occasionally returns wrong values.
 
-   #### 2.2 Python Service
-   Der Service nutzt die HomeAssistantAPI, um Push-Benachrichtigungen an Handys zu schicken und die `paho-mqtt`-Bibliothek, um die von TTN empfangenen LoRa-Daten auszuwerten und daraufhin einen `notify`-Service in HomeAssistant auszulösen.
-   
-   Die Zugangsdaten (TTN-API-Key, HomeAssistant-Token) stehen nicht im Repo: `Python Service/.env.example` nach `Python Service/.env` kopieren und ausfüllen oder die Variablen `TTN_API_KEY`, `HA_URL` und `HA_TOKEN` in der Umgebung setzen. Die LoRaWAN-Keys der Firmware gehören nach `PlatformIO Project/keyfiles/lorawan-keys.h` (Vorlage: `lorawan-keys_example.h`).
+   #### 2.2 Python service
+   The service uses the Home Assistant API to send push notifications to phones and the `paho-mqtt` library to process the LoRa data received from TTN and then trigger a `notify` service in Home Assistant.
 
-   <img src="https://github.com/mblees/IOT_Paketbox/assets/104490472/f75a16c0-de0b-48ad-9c84-602454432d41" alt="notify" width="800" height="800">
+   The credentials (TTN API key, Home Assistant token) are not in the repository: copy `Python Service/.env.example` to `Python Service/.env` and fill it in, or set the variables `TTN_API_KEY`, `HA_URL` and `HA_TOKEN` in the environment. The firmware's LoRaWAN keys belong in `PlatformIO Project/keyfiles/lorawan-keys.h` (template: `lorawan-keys_example.h`).
 
-   #### 2.3 HomeAssistant
-   Der HomeAssistant Server läuft in meinem Fall auf einer Oracle VM VirtualBox auf dem selben PC auf welchem auch der Python Service läuft. Die beiden Programme sind allerdings nur in soweit anhängig voneienander, dass sie im selben Wlan ausgeführt werden müssen.
-   
-   ![Screenshot 2024-02-06 204836](https://github.com/mblees/IOT_Paketbox/assets/104490472/3eea11d3-cd80-485e-a917-ccd353d0eec2)
+   <img src="https://github.com/mblees/IOT_Paketbox/assets/104490472/f75a16c0-de0b-48ad-9c84-602454432d41" alt="Push notification on the phone" width="800" height="800">
 
-### 3. Datenübertragung
-   Die Daten, die mit den Sensoren erfasst werden, werden beim Öffnen und Schließen der Box vom Mikrocontroller über LoRa und The Things Network (TTN) gesendet. TTN stellt die Daten über einen MQTT-Server zur Verfügung, welche wir mithilfe eines Python-Services abfangen und daraufhin einen Service in HomeAssistant auslösen. Der Service in HomeAssistant führt dann wiederum dazu, dass eine Push-Benachrichtigung auf dem Handy des Besitzers der Box erscheint.
+   #### 2.3 Home Assistant
+   In my case, the Home Assistant server runs in an Oracle VM VirtualBox on the same PC that also runs the Python service. The two programs only depend on each other in that they have to run in the same Wi-Fi network.
 
-   Sensoren -> ESP32 -> LoRa -> TTN -> MQTT -> Python Service -> HomeAssistant -> Mobiltelefon
+   ![Home Assistant dashboard](https://github.com/mblees/IOT_Paketbox/assets/104490472/3eea11d3-cd80-485e-a917-ccd353d0eec2)
 
-### 4. Pinbelegung
-![Screenshot 2024-02-06 195223](https://github.com/mblees/IOT_Paketbox/assets/104490472/6597162c-f7ba-4976-bddb-5b58aae3a955)
+### 3. Data transmission
+   The data recorded by the sensors is sent by the microcontroller via LoRa and The Things Network (TTN) when the box is opened and closed. TTN provides the data through an MQTT server; a Python service picks it up and triggers a service in Home Assistant. That service in turn causes a push notification to appear on the box owner's phone.
 
-| Gerät                | Pins                    |
+   Sensors -> ESP32 -> LoRa -> TTN -> MQTT -> Python service -> Home Assistant -> mobile phone
+
+### 4. Pin assignment
+![Pinout of the Heltec WiFi LoRa 32 V2](https://github.com/mblees/IOT_Paketbox/assets/104490472/6597162c-f7ba-4976-bddb-5b58aae3a955)
+
+| Device               | Pins                    |
 |----------------------|-------------------------|
-| Matrixtastatur       | 0, 2, 23, 25            |
-| Steppermotor         | 12, 13, 17, 21          |
-| Reed Sensor          | 36                      |
-| Ultraschallsensor    | 22, 37                  |
-| LoRa Modul (Werk)    | 19, 18, 5, 15, 4, 16, 26, 27, 14 |
+| Matrix keypad        | 0, 2, 23, 25            |
+| Stepper motor        | 12, 13, 17, 21          |
+| Reed sensor          | 36                      |
+| Ultrasonic sensor    | 22, 37                  |
+| LoRa module (on-board) | 19, 18, 5, 15, 4, 16, 26, 27, 14 |
 
-### 5. Anmerkungen
-Um weitere Features wie einen RFID-Sensor hinzuzufügen, fehlen dem verwendeten ESP32 weitere Pins. Eine mögliche Alternative war in diesem Fall der STM-WL55JC mit LoRa-Antenne. Allerdings gibt es für diesen Mikrocontroller keine öffentlichen LoRa-Bibliotheken, die für dieses Projekt in Frage gekommen wären. Ich habe versucht, eine Bibliothek für diesen Controller selbst zu schreiben, habe aber nach einigen Stunden Arbeit keine Ergebnisse erzielen können.
+### 5. Notes
+To add further features such as an RFID sensor, the ESP32 used here lacks additional pins. A possible alternative in this case was the STM32WL55JC with a LoRa antenna. However, there are no public LoRa libraries for this microcontroller that would have been suitable for this project. I tried to write a library for this controller myself, but was unable to get results after several hours of work.
+
+## License
+
+My own code and documentation are released under the [MIT license](LICENSE). The firmware in
+`PlatformIO Project/` is based on [LMIC-node](https://github.com/lnlp/LMIC-node) and keeps its
+original MIT license ([`PlatformIO Project/LICENSE`](PlatformIO%20Project/LICENSE)).
