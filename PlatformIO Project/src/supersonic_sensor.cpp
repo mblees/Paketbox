@@ -37,7 +37,7 @@ float read_us_average(){
     float additive = 0;
     uint8_t confirmation_counter = 0;
 
-    for(int i = 0; i <= 10; i++){
+    for(int i = 0; i < 10; i++){ // 10 valid samples, divided by 10 below
         additive = read_us();
         if(additive == -1){
             i--;
